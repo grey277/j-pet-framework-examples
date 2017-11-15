@@ -23,6 +23,7 @@
 #include "HitFinder.h"
 #include "EventFinder.h"
 #include "EventCategorizer.h"
+#include "ImageReco.h"
 
 using namespace std;
 
@@ -38,72 +39,80 @@ int main(int argc, char* argv[])
   //First task - unpacking
   manager.registerTask([]() {
     return new JPetTaskLoader("hld", "tslot.raw",
-      new TimeWindowCreator(
-        "TimeWindowCreator",
-        "Process unpacked HLD file into a tree of JPetTimeWindow objects"
-      )
-    );
+                              new TimeWindowCreator(
+                                "TimeWindowCreator",
+                                "Process unpacked HLD file into a tree of JPetTimeWindow objects"
+                              )
+                             );
   });
 
   //Second task - Signal Channel calibration
   manager.registerTask([]() {
     return new JPetTaskLoader("tslot.raw", "tslot.calib",
-      new TimeCalibLoader(
-        "TimeCalibLoader",
-        "Apply time corrections from prepared calibrations"
-      )
-    );
+                              new TimeCalibLoader(
+                                "TimeCalibLoader",
+                                "Apply time corrections from prepared calibrations"
+                              )
+                             );
   });
 
   //Third task - Raw Signal Creation
   manager.registerTask([]() {
     return new JPetTaskLoader("tslot.calib", "raw.sig",
-      new SignalFinder(
-        "SignalFinder",
-        "Create Raw Signals, optional - draw control histograms",
-        true
-      )
-    );
+                              new SignalFinder(
+                                "SignalFinder",
+                                "Create Raw Signals, optional - draw control histograms",
+                                true
+                              )
+                             );
   });
 
   ////Fourth task - Reco & Phys signal creation
   manager.registerTask([]() {
     return new JPetTaskLoader("raw.sig", "phys.sig",
-      new SignalTransformer(
-        "SignalTransformer",
-        "Create Reco & Phys Signals"
-      )
-    );
+                              new SignalTransformer(
+                                "SignalTransformer",
+                                "Create Reco & Phys Signals"
+                              )
+                             );
   });
 
   ////Fifth task - Hit construction
   manager.registerTask([]() {
     return new JPetTaskLoader("phys.sig", "hits",
-      new HitFinder(
-        "HitFinder",
-        "Create hits from physical signals"
-      )
-    );
+                              new HitFinder(
+                                "HitFinder",
+                                "Create hits from physical signals"
+                              )
+                             );
   });
 
   ////Sixth task - unknown Event construction
   manager.registerTask([]() {
     return new JPetTaskLoader("hits", "unk.evt",
-      new EventFinder(
-        "EventFinder",
-        "Create Events as group of Hits"
-      )
-    );
+                              new EventFinder(
+                                "EventFinder",
+                                "Create Events as group of Hits"
+                              )
+                             );
   });
 
   //Seventh task - Event Categorization
   manager.registerTask([]() {
     return new JPetTaskLoader("unk.evt", "cat.evt",
-      new EventCategorizer(
-        "EventCategorizer",
-        "Categorize Events"
-      )
-    );
+                              new EventCategorizer(
+                                "EventCategorizer",
+                                "Categorize Events"
+                              )
+                             );
+  });
+
+
+  manager.registerTask([]() {
+    return new JPetTaskLoader("unk.evt", "reco",
+                              new ImageReco(
+                                "Image Reco",
+                                "Create reco histograms"));
   });
 
   manager.run();
