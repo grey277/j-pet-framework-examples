@@ -10,17 +10,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *  @file main.cpp
+ *  @file SignalTransformer.h
  */
 
-#include <TString.h>
-#include <DBHandler/HeaderFiles/DBHandler.h>
-#include <JPetManager/JPetManager.h>
+#ifndef SIGNALTRANSFORMER_H
+#define SIGNALTRANSFORMER_H
 
-using namespace std;
-int main(int argc, char* argv[])
+#include "JPetUserTask/JPetUserTask.h"
+#include "JPetRecoSignal/JPetRecoSignal.h"
+
+#ifdef __CINT__
+#   define override
+#endif
+
+class JPetWriter;
+
+class SignalTransformer: public JPetUserTask
 {
-  JPetManager& manager = JPetManager::getManager();
-  manager.parseCmdLine(argc, argv);
-  manager.run();
-}
+
+public:
+  SignalTransformer(const char* name);
+  virtual bool init() override;
+  virtual bool exec() override;
+  virtual bool terminate() override;
+
+protected:
+  JPetRecoSignal createRecoSignal(const JPetRawSignal& rawSignal);
+  JPetPhysSignal createPhysSignal(const JPetRecoSignal& signals);
+};
+#endif /*  !SIGNALTRANSFORMER_H */

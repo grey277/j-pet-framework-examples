@@ -1,5 +1,5 @@
 /**
- *  @copyright Copyright 2016 The J-PET Framework Authors. All rights reserved.
+ *  @copyright Copyright 2017 The J-PET Framework Authors. All rights reserved.
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may find a copy of the License in the LICENCE file.
@@ -14,14 +14,14 @@
  */
 
 #include <JPetManager/JPetManager.h>
-#include "TimeWindowCreator.h"
-#include "TimeCalibLoader.h"
-#include "SignalFinder.h"
-#include "SignalTransformer.h"
-#include "HitFinder.h"
-#include "EventFinder.h"
-#include "EventCategorizer.h"
-
+#include "../LargeBarrelAnalysis/TimeWindowCreator.h"
+#include "../LargeBarrelAnalysis/TimeCalibLoader.h"
+#include "../LargeBarrelAnalysis/SignalFinder.h"
+#include "../LargeBarrelAnalysis/SignalTransformer.h"
+#include "../LargeBarrelAnalysis/HitFinder.h"
+#include "../LargeBarrelAnalysis/EventFinder.h"
+#include "../LargeBarrelAnalysis/EventCategorizer.h"
+#include "TimeCalibration.h"
 using namespace std;
 
 int main(int argc, const char* argv[])
@@ -32,18 +32,17 @@ int main(int argc, const char* argv[])
   manager.registerTask<TimeWindowCreator>("TimeWindowCreator");
   manager.registerTask<TimeCalibLoader>("TimeCalibLoader");
   manager.registerTask<SignalFinder>("SignalFinder");
-  manager.registerTask<SignalTransformer>("SignalTransformer");
-  manager.registerTask<HitFinder>("HitFinder");
-  manager.registerTask<EventFinder>("EventFinder");
-  manager.registerTask<EventCategorizer>("EventCategorizer");
-
+  manager.registerTask<SignalTransformer>("SignalTransformer"); 
+  manager.registerTask<HitFinder>("HitFinder"); 
+  manager.registerTask<TimeCalibration>("TimeCalibration"); 
+  
   manager.useTask("TimeWindowCreator", "hld", "tslot.raw");
   manager.useTask("TimeCalibLoader", "tslot.raw", "tslot.calib");
   manager.useTask("SignalFinder", "tslot.calib", "raw.sig");
   manager.useTask("SignalTransformer", "raw.sig", "phys.sig");
   manager.useTask("HitFinder", "phys.sig", "hits");
-  manager.useTask("EventFinder", "hits", "unk.evt");
-  manager.useTask("EventCategorizer", "unk.evt", "cat.evt");
+  manager.useTask("TimeCalibration", "hits", "calib");
 
   manager.run(argc, argv);
+  
 }
