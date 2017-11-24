@@ -1,5 +1,5 @@
 /**
- *  @copyright Copyright 2016 The J-PET Framework Authors. All rights reserved.
+ *  @copyright Copyright 2017 The J-PET Framework Authors. All rights reserved.
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may find a copy of the License in the LICENCE file.
@@ -10,32 +10,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *  @file TaskC.h
+ *  @file ImageReco.h
  */
 
-#ifndef TASKC_H
-#define TASKC_H
-
-#include <JPetTask/JPetTask.h>
-#include <JPetHit/JPetHit.h>
-#include <JPetRawSignal/JPetRawSignal.h>
+#ifndef IMAGERECO_H
+#define IMAGERECO_H
 
 #ifdef __CINT__
 //when cint is used instead of compiler, override word is not recognized
 //nevertheless it's needed for checking if the structure of project is correct
-#	define override
+#define override
 #endif
-class TaskC: public JPetTask
+
+#include <JPetUserTask/JPetUserTask.h>
+#include <memory>
+
+/**
+ * @brief TODO...
+ *
+ * TODO...
+ *
+ */
+class ImageReco : public JPetUserTask
 {
+
 public:
-  TaskC(const char* name, const char* description);
-  virtual ~TaskC();
-  virtual void init(const JPetTaskInterface::Options& opts)override;
-  virtual void exec()override;
-  virtual void terminate()override;
-protected:
-  std::vector<JPetHit> createHits(const JPetTimeWindow & signals);
-  void saveHits(const std::vector<JPetHit>& hits);
-  const int kNumOfThresholds = 4;
+  ImageReco(const char* name);
+  virtual ~ImageReco();
+  virtual bool init() override;
+  virtual bool exec() override;
+  virtual bool terminate() override;
+private:
+  bool calculateReconstructedPosition(const JPetHit& firstHit, const JPetHit& secondHit);
 };
-#endif /*  !TASKD_H */
+
+#endif /*  !IMAGERECO_H */
