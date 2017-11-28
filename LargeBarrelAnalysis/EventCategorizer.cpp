@@ -119,8 +119,8 @@ bool EventCategorizer::exec()
       if (event.getHits().size() > 1) {
 
         vector<JPetHit> hits = event.getHits();
-        for (int i = 0; i < hits.size(); i++) {
-          for (int j = i + 1; j < hits.size(); j++) {
+        for (size_t i = 0; i < hits.size(); i++) {
+          for (size_t j = i + 1; j < hits.size(); j++) {
             JPetHit firstHit = hits.at(i);
             JPetHit secondHit = hits.at(j);
 
