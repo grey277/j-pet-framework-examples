@@ -25,6 +25,13 @@ const int zRange = 50;
 
 const int numberOfHitsInEventHisto = 10;
 
+const int CUT_ON_Z_VALUE = 23;
+const int CUT_ON_LOR_DISTANCE_FROM_CENTER = 25;
+const int ANNIHILATION_POINT_Z = 23;
+const int TOT_MIN_VALUE = 15;
+const int TOT_MAX_VALUE = 25;
+const int ANGLE_DELTA_MIN_VALUE = 20;
+
 ImageReco::ImageReco(const char* name) : JPetUserTask(name) { }
 
 ImageReco::~ImageReco() { }
@@ -58,6 +65,8 @@ bool ImageReco::exec()
       else {
         auto hits = event.getHits();
         for (unsigned int i = 0; i < hits.size() - 1; i ++) {
+          if (!checkConditions(hits[i], hits[i + 1]))
+            continue;
           calculateReconstructedPosition(hits[i], hits[i + 1]);
         }
       }
@@ -74,6 +83,71 @@ bool ImageReco::terminate()
   //getStatistics().getHisto<TH3D>("hits_pos").SetShowProjection("yx Col", 100);
   return true;
 }
+
+bool ImageReco::checkConditions(const JPetHit& first, const JPetHit& second)
+{
+  if (!cutOnZ(first, second))
+    return false;
+  if (!cutOnLORDistanceFromCenter(first, second))
+    return false;
+  if (angleDelta(first, second) < ANGLE_DELTA_MIN_VALUE)
+    return false;
+  double totOfFirstHit = calculateSumOfTOTsOfHit(first);
+  if (totOfFirstHit < TOT_MIN_VALUE || totOfFirstHit > TOT_MAX_VALUE)
+    return false;
+  double totOfSecondHit = calculateSumOfTOTsOfHit(second);
+  if (totOfSecondHit < TOT_MIN_VALUE || totOfSecondHit > TOT_MAX_VALUE)
+    return false;
+
+  return true;
+}
+
+bool ImageReco::cutOnZ(const JPetHit& first, const JPetHit& second)
+{
+  return std::fabs(first.getPosZ()) < CUT_ON_Z_VALUE && fabs(second.getPosZ()) < CUT_ON_Z_VALUE;
+}
+
+bool ImageReco::cutOnLORDistanceFromCenter(const JPetHit& first, const JPetHit& second)
+{
+  double x_a = first.getPosX();
+  double x_b = second.getPosX();
+
+  double y_a = first.getPosY();
+  double y_b = second.getPosY();
+
+  double a = (y_a - y_b) / (x_a - x_b);
+  double c = y_a - ((y_a - y_b) / (x_a - x_b)) * x_a;
+
+  return (std::fabs(c) / std::sqrt(a * a + 1)) < CUT_ON_LOR_DISTANCE_FROM_CENTER; //b is 1 and b*b is 1
+}
+
+float ImageReco::angleDelta(const JPetHit& first, const JPetHit& second)
+{
+  float delta = fabs(first.getBarrelSlot().getTheta() - second.getBarrelSlot().getTheta());
+  return std::min(delta, 360 - delta);
+}
+
+double ImageReco::calculateSumOfTOTsOfHit(const JPetHit& hit)
+{
+  return calculateSumOfTOTs(hit.getSignalA()) + calculateSumOfTOTs(hit.getSignalB());
+}
+
+double ImageReco::calculateSumOfTOTs(const JPetPhysSignal& signal)
+{
+  double tot = 0.;
+  std::map<int, double> leadingPoints, trailingPoints;
+  leadingPoints = signal.getRecoSignal().getRawSignal().getTimesVsThresholdNumber(JPetSigCh::Leading);
+  trailingPoints = signal.getRecoSignal().getRawSignal().getTimesVsThresholdNumber(JPetSigCh::Trailing);
+  for (int i = 1; i < 5; i++) {
+    auto leadSearch = leadingPoints.find(i);
+    auto trailSearch = trailingPoints.find(i);
+
+    if (leadSearch != leadingPoints.end() && trailSearch != trailingPoints.end())
+      tot += (trailSearch->second - leadSearch->second) / 1000;
+  }
+  return tot;
+}
+
 
 bool ImageReco::calculateReconstructedPosition(const JPetHit& firstHit, const JPetHit& secondHit)
 {
@@ -104,7 +178,8 @@ bool ImageReco::calculateReconstructedPosition(const JPetHit& firstHit, const JP
   x = firstHit.getPosX() + ((vdx / 2.0) + (vdx / dd * mtof_a));
   y = firstHit.getPosY() + ((vdy / 2.0) + (vdy / dd * mtof_a));
   z = s1_z + ((vdz / 2.0) + (vdz / dd * mtof_a));
-  if (x > -xRange && x < xRange && y > -yRange && y < yRange && z > -zRange && z < zRange) {
+  //x > -xRange && x < xRange && y > -yRange && y < yRange &&
+  if (z > -ANNIHILATION_POINT_Z && z < ANNIHILATION_POINT_Z) {
     getStatistics().getHisto<TH3D>("hits_pos").Fill(x, y, z);
     return true;
   }

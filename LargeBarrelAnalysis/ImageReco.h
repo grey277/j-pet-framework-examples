@@ -42,6 +42,12 @@ public:
   virtual bool terminate() override;
 private:
   bool calculateReconstructedPosition(const JPetHit& firstHit, const JPetHit& secondHit);
+  bool cutOnZ(const JPetHit& first, const JPetHit& second);
+  bool cutOnLORDistanceFromCenter(const JPetHit& first, const JPetHit& second);
+  float angleDelta(const JPetHit& first, const JPetHit& second);
+  double calculateSumOfTOTsOfHit(const JPetHit& hit);
+  double calculateSumOfTOTs(const JPetPhysSignal& signal);
+  bool checkConditions(const JPetHit& first, const JPetHit& second);
 };
 
 #endif /*  !IMAGERECO_H */
