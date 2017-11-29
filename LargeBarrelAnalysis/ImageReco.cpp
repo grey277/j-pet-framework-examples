@@ -31,6 +31,9 @@ ImageReco::~ImageReco() { }
 
 bool ImageReco::init()
 {
+
+  fOutputEvents = new JPetTimeWindow("JPetEvent");
+
   getStatistics().createHistogram(new TH3D("hits_pos",
                                   "Reconstructed hit pos",
                                   numberOfBins, -xRange, xRange,
@@ -48,9 +51,9 @@ bool ImageReco::exec()
     unsigned int numberOfEventsInTimeWindow = timeWindow->getNumberOfEvents();
     for (unsigned int i = 0; i < numberOfEventsInTimeWindow; i++) {
       auto event = dynamic_cast<const JPetEvent&>(timeWindow->operator[](static_cast<int>(i)));
-      getStatistics().getHisto<TH1I>("number_of_events").Fill(event.getHits().size());
       auto numberOfHits = event.getHits().size();
-      if (numberOfHits == 1 || numberOfHits <= 0)
+      getStatistics().getHisto<TH1I>("number_of_events").Fill(numberOfHits);
+      if (numberOfHits <= 1)
         continue;
       else {
         auto hits = event.getHits();
@@ -59,6 +62,9 @@ bool ImageReco::exec()
         }
       }
     }
+  } else {
+    ERROR("Returned event is not TimeWindow");
+    return false;
   }
   return true;
 }
