@@ -17,6 +17,8 @@
 #include "ImageReco.h"
 #include <TH3D.h>
 #include <TH1I.h>
+#include "./JPetOptionsTools/JPetOptionsTools.h"
+using namespace jpet_options_tools;
 
 const int numberOfBins = 100;
 const int xRange = 100;
@@ -25,12 +27,12 @@ const int zRange = 50;
 
 const int numberOfHitsInEventHisto = 10;
 
-const int CUT_ON_Z_VALUE = 23;
-const int CUT_ON_LOR_DISTANCE_FROM_CENTER = 25;
-const int ANNIHILATION_POINT_Z = 23;
-const int TOT_MIN_VALUE = 15;
-const int TOT_MAX_VALUE = 25;
-const int ANGLE_DELTA_MIN_VALUE = 20;
+int CUT_ON_Z_VALUE = 23;
+int CUT_ON_LOR_DISTANCE_FROM_CENTER = 25;
+int ANNIHILATION_POINT_Z = 23;
+int TOT_MIN_VALUE = 15;
+int TOT_MAX_VALUE = 25;
+int ANGLE_DELTA_MIN_VALUE = 20;
 
 ImageReco::ImageReco(const char* name) : JPetUserTask(name) { }
 
@@ -38,6 +40,13 @@ ImageReco::~ImageReco() { }
 
 bool ImageReco::init()
 {
+  auto opts = getOptions();
+  CUT_ON_Z_VALUE = getOptionAsInt(opts, "ImageReco_CUT_ON_Z_VALUE_int");
+  CUT_ON_LOR_DISTANCE_FROM_CENTER = getOptionAsInt(opts, "ImageReco_CUT_ON_LOR_DISTANCE_FROM_CENTER_int");
+  ANNIHILATION_POINT_Z = getOptionAsInt(opts, "ImageReco_ANNIHILATION_POINT_Z_int");
+  TOT_MIN_VALUE = getOptionAsInt(opts, "ImageReco_TOT_MIN_VALUE_int");
+  TOT_MAX_VALUE = getOptionAsInt(opts, "ImageReco_TOT_MAX_VALUE_int");
+  ANGLE_DELTA_MIN_VALUE = getOptionAsInt(opts, "ImageReco_ANGLE_DELTA_MIN_VALUE_int");
 
   fOutputEvents = new JPetTimeWindow("JPetEvent");
 
@@ -92,9 +101,11 @@ bool ImageReco::checkConditions(const JPetHit& first, const JPetHit& second)
     return false;
   if (angleDelta(first, second) < ANGLE_DELTA_MIN_VALUE)
     return false;
+
   double totOfFirstHit = calculateSumOfTOTsOfHit(first);
   if (totOfFirstHit < TOT_MIN_VALUE || totOfFirstHit > TOT_MAX_VALUE)
     return false;
+
   double totOfSecondHit = calculateSumOfTOTsOfHit(second);
   if (totOfSecondHit < TOT_MIN_VALUE || totOfSecondHit > TOT_MAX_VALUE)
     return false;
