@@ -16,16 +16,24 @@
 
 #ifndef TimeCalibration_H 
 #define TimeCalibration_H 
+<<<<<<< HEAD
 #include <JPetTask/JPetTask.h>
 #include <JPetHit/JPetHit.h>
 #include <JPetRawSignal/JPetRawSignal.h>
 #include "LargeBarrelMapping.h"
+=======
+#include <JPetUserTask/JPetUserTask.h>
+#include <JPetHit/JPetHit.h>
+#include <JPetRawSignal/JPetRawSignal.h>
+#include <JPetGeomMapping/JPetGeomMapping.h>
+>>>>>>> 48f63a57b23c66ec13297f4152eb9b97e7c66110
 class JPetWriter;
 #ifdef __CINT__
 //when cint is used instead of compiler, override word is not recognized
 //nevertheless it's needed for checking if the structure of project is correct
 #	define override
 #endif
+<<<<<<< HEAD
 class TimeCalibration:public JPetTask{
 public:
 	TimeCalibration(const char * name, const char * description);
@@ -39,6 +47,19 @@ protected:
 	void fillHistosForHit(const JPetHit & hit,const std::vector<double> &RefTimesL,const std::vector<double> & RefTimesT);
 	JPetWriter* fWriter;
 	LargeBarrelMapping fBarrelMap;
+=======
+class TimeCalibration:public JPetUserTask{
+public:
+	TimeCalibration(const char * name);
+  virtual ~TimeCalibration();
+	virtual bool init()override;
+	virtual bool exec()override;
+	virtual bool terminate()override;
+protected:
+	const char * formatUniqueSlotDescription(const JPetBarrelSlot & slot, int threshold,const char * prefix);
+	void fillHistosForHit(const JPetHit & hit,const std::vector<double> &RefTimesL,const std::vector<double> & RefTimesT);
+	JPetGeomMapping* fBarrelMap;
+>>>>>>> 48f63a57b23c66ec13297f4152eb9b97e7c66110
 	std::string OutputFile = "TimeConstantsCalib.txt";
 	const float Cl[3] = {0.,0.1418,0.5003};    //[ns]
 	const float SigCl[3] = {0.,0.0033,0.0033}; //[ns]

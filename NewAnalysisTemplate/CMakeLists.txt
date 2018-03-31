@@ -14,7 +14,7 @@ cmake_minimum_required(VERSION 2.6)
 set(projectName NewProjectName)
 
 # files to be copied from some other example directory, if any
-set(USE_AUX_FILES_FROM LargeBarrelAnalysisExtended)
+set(USE_AUX_FILES_FROM LargeBarrelAnalysis)
 
 set(AUXILLIARY_FILES
   run.sh
@@ -39,14 +39,14 @@ file(GLOB HEADERS *.h)
 file(GLOB SOURCES *.cpp)
 
 ######################################################################
-### Use source files of modules from LargeBarrelAnalysisExtended
+### Use source files of modules from LargeBarrelAnalysis
 ###
 ### If you are using your own version of some module which
-### is also presenr in LargeBarrelAnalysisExtended,
+### is also presenr in LargeBarrelAnalysis,
 ### comment out the respective lines below so as not to use
-### this module's source from LargeBarrelAnalysisExtended.
+### this module's source from LargeBarrelAnalysis.
 ######################################################################
-set(use_modules_from ../LargeBarrelAnalysisExtended)
+set(use_modules_from ../LargeBarrelAnalysis)
 #
 list(APPEND HEADERS ${use_modules_from}/TimeWindowCreator.h)
 list(APPEND SOURCES ${use_modules_from}/TimeWindowCreator.cpp)
@@ -75,9 +75,6 @@ list(APPEND SOURCES ${use_modules_from}/EventFinder.cpp)
 list(APPEND HEADERS ${use_modules_from}/EventCategorizer.h)
 list(APPEND SOURCES ${use_modules_from}/EventCategorizer.cpp)
 
-message(STATUS "S: " ${SOURCES})
-message(STATUS "H: " ${HEADERS})
-
 include_directories(${Framework_INCLUDE_DIRS})
 add_definitions(${Framework_DEFINITIONS})
 
@@ -86,15 +83,6 @@ target_link_libraries(${projectBinary} JPetFramework)
 
 add_custom_target(clean_data_${projectName}
   COMMAND rm -f *.tslot.*.root *.phys.*.root *.sig.root)
-
-# copy the DB config file to an expected location
-set(db_config_dir ${CMAKE_CURRENT_BINARY_DIR}/../DBConfig)
-
-add_custom_command(TARGET ${projectBinary}
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND}
-  ARGS -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-framework/DBHandler/Config ${db_config_dir}
-)
 
 set(copy_depends) #create variable for list with depends files path
 

@@ -13,23 +13,22 @@
  *  @file main.cpp
  */
 
-#include <DBHandler/HeaderFiles/DBHandler.h>
 #include <JPetManager/JPetManager.h>
-#include <JPetTaskLoader/JPetTaskLoader.h>
-#include "TaskA.h"
-#include "TaskB1.h"
-#include "TaskC.h"
-#include "TaskD.h"
-#include "TaskE.h"
+#include "TimeWindowCreator.h"
+#include "TimeCalibLoader.h"
+#include "SignalFinder.h"
+#include "SignalTransformer.h"
+#include "HitFinder.h"
+#include "EventFinder.h"
+#include "EventCategorizer.h"
+#include "ImageReco.h"
 
 using namespace std;
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
-  DB::SERVICES::DBHandler::createDBConnection("../DBConfig/configDB.cfg");
-  JPetManager& manager = JPetManager::getManager();
-  manager.parseCmdLine(argc, argv);
 
+<<<<<<< HEAD
   // Here create all analysis modules to be used:
 
   manager.registerTask([](){
@@ -43,13 +42,20 @@ int main(int argc, char* argv[])
   				new TaskB1("Module B1: Make TOT histos and assemble signals",
 					   "Assemble signals and create TOT historgrams"));
     });
+=======
+  JPetManager& manager = JPetManager::getManager();
+>>>>>>> 48f63a57b23c66ec13297f4152eb9b97e7c66110
 
-   manager.registerTask([](){ 
-       return new JPetTaskLoader("raw.sig", "phys.hit", 
-				 new TaskC("Module C: Pair signals", 
-					   "Create hits from pairs of signals")); 
-     }); 
+  manager.registerTask<TimeWindowCreator>("TimeWindowCreator");
+  manager.registerTask<TimeCalibLoader>("TimeCalibLoader");
+  manager.registerTask<SignalFinder>("SignalFinder");
+  manager.registerTask<SignalTransformer>("SignalTransformer");
+  manager.registerTask<HitFinder>("HitFinder");
+  manager.registerTask<EventFinder>("EventFinder");
+  manager.registerTask<EventCategorizer>("EventCategorizer");
+  manager.registerTask<ImageReco>("ImageReco");
 
+<<<<<<< HEAD
   manager.registerTask([](){
       return new JPetTaskLoader("phys.hit", "phys.hit.means",
 				new TaskD("Module D: Make histograms for hits",
@@ -61,6 +67,16 @@ int main(int argc, char* argv[])
   				new TaskE("Module E: Filter hits",
   					  "Pass only hits with time diffrerence close to the peak"));
     });
+=======
+  manager.useTask("TimeWindowCreator", "hld", "tslot.raw");
+  manager.useTask("TimeCalibLoader", "tslot.raw", "tslot.calib");
+  manager.useTask("SignalFinder", "tslot.calib", "raw.sig");
+  manager.useTask("SignalTransformer", "raw.sig", "phys.sig");
+  manager.useTask("HitFinder", "phys.sig", "hits");
+  manager.useTask("EventFinder", "hits", "unk.evt");
+  manager.useTask("EventCategorizer", "unk.evt", "cat.evt");
+  manager.useTask("ImageReco", "unk.evt", "reco");
+>>>>>>> 48f63a57b23c66ec13297f4152eb9b97e7c66110
 
-  manager.run();
+  manager.run(argc, argv);
 }

@@ -1,5 +1,5 @@
 /**
- *  @copyright Copyright 2016 The J-PET Framework Authors. All rights reserved.
+ *  @copyright Copyright 2017 The J-PET Framework Authors. All rights reserved.
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may find a copy of the License in the LICENCE file.
@@ -13,88 +13,36 @@
  *  @file main.cpp
  */
 
-#include <DBHandler/HeaderFiles/DBHandler.h>
 #include <JPetManager/JPetManager.h>
-#include <JPetTaskLoader/JPetTaskLoader.h>
-#include "../LargeBarrelAnalysisExtended/TimeWindowCreator.h"
-#include "../LargeBarrelAnalysisExtended/TimeCalibLoader.h"
-#include "../LargeBarrelAnalysisExtended/SignalFinder.h"
-#include "../LargeBarrelAnalysisExtended/SignalTransformer.h"
-#include "HitFinder.h"
-#include "../LargeBarrelAnalysisExtended/EventFinder.h"
-#include "../LargeBarrelAnalysisExtended/EventCategorizer.h"
+#include "../LargeBarrelAnalysis/TimeWindowCreator.h"
+#include "../LargeBarrelAnalysis/TimeCalibLoader.h"
+#include "../LargeBarrelAnalysis/SignalFinder.h"
+#include "../LargeBarrelAnalysis/SignalTransformer.h"
+#include "../LargeBarrelAnalysis/HitFinder.h"
+#include "../LargeBarrelAnalysis/EventFinder.h"
+#include "../LargeBarrelAnalysis/EventCategorizer.h"
 #include "TimeCalibration.h"
 using namespace std;
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
 
-  //Connection to the remote database disabled for the moment
-  //DB::SERVICES::DBHandler::createDBConnection("../DBConfig/configDB.cfg");
-
   JPetManager& manager = JPetManager::getManager();
-  manager.parseCmdLine(argc, argv);
 
-  //First task - unpacking
-  manager.registerTask([]() {
-    return new JPetTaskLoader("hld", "tslot.raw",
-      new TimeWindowCreator(
-        "TimeWindowCreator",
-        "Process unpacked HLD file into a tree of JPetTimeWindow objects"
-      )
-    );
-  });
+  manager.registerTask<TimeWindowCreator>("TimeWindowCreator");
+  manager.registerTask<TimeCalibLoader>("TimeCalibLoader");
+  manager.registerTask<SignalFinder>("SignalFinder");
+  manager.registerTask<SignalTransformer>("SignalTransformer");
+  manager.registerTask<HitFinder>("HitFinder");
+  manager.registerTask<TimeCalibration>("TimeCalibration");
 
-  //Second task - Signal Channel calibration
-  manager.registerTask([]() {
-    return new JPetTaskLoader("tslot.raw", "tslot.calib",
-      new TimeCalibLoader(
-        "TimeCalibLoader",
-        "Apply time corrections from prepared calibrations"
-      )
-    );
-  });
+  manager.useTask("TimeWindowCreator", "hld", "tslot.raw");
+  manager.useTask("TimeCalibLoader", "tslot.raw", "tslot.calib");
+  manager.useTask("SignalFinder", "tslot.calib", "raw.sig");
+  manager.useTask("SignalTransformer", "raw.sig", "phys.sig");
+  manager.useTask("HitFinder", "phys.sig", "hits");
+  manager.useTask("TimeCalibration", "hits", "calib");
 
-  //Third task - Raw Signal Creation
-  manager.registerTask([]() {
-    return new JPetTaskLoader("tslot.calib", "raw.sig",
-      new SignalFinder(
-        "SignalFinder",
-        "Create Raw Signals, optional - draw control histograms",
-        true
-      )
-    );
-  });
+  manager.run(argc, argv);
 
-  ////Fourth task - Reco & Phys signal creation
-  manager.registerTask([]() {
-    return new JPetTaskLoader("raw.sig", "phys.sig",
-      new SignalTransformer(
-        "SignalTransformer",
-        "Create Reco & Phys Signals"
-      )
-    );
-  });
-
-  ////Fifth task - Hit construction
-  manager.registerTask([]() {
-    return new JPetTaskLoader("phys.sig", "hits",
-      new HitFinder(
-        "HitFinder",
-        "Create hits from physical signals"
-      )
-    );
-  });
-
-  ////Sixth task - Hit construction 
-  manager.registerTask([]() {
-      return new JPetTaskLoader("hits", "calib",
-        new TimeCalibration(
-	"TimeCalibration",
-        "Determines the time calibration constants from refference detector data"
-	)
-      );
-    });
-
-  manager.run();
 }
