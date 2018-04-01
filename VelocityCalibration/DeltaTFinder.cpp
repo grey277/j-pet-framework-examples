@@ -40,14 +40,14 @@ bool DeltaTFinder::init()
 
   if (fSaveControlHistos) {
     // create histograms for time differences at each slot and each threshold
-    for (auto & scin : getParamBank().getScintillators()) {
+    for (auto& scin : getParamBank().getScintillators()) {
       for (int thr = 1; thr <= 4; thr++) {
         const char* histo_name = formatUniqueSlotDescription(scin.second->getBarrelSlot(), thr, "timeDiffAB_");
         getStatistics().createHistogram( new TH1F(histo_name, histo_name, 400, -20., 20.) );
       }
     }
     // create histograms for time diffrerence vs slot ID
-    for (auto & layer : getParamBank().getLayers()) {
+    for (auto& layer : getParamBank().getLayers()) {
       for (int thr = 1; thr <= 4; thr++) {
         const char* histo_name = Form("TimeDiffVsID_layer_%d_thr_%d", (int)fBarrelMap->getLayerNumber(*layer.second), thr);
         const char* histo_titile = Form("%s;Slot ID; TimeDiffAB [ns]", histo_name);
@@ -88,8 +88,6 @@ bool DeltaTFinder::init()
 
   if (isOptionSet(fParams.getOptions(), fVelocityCalibFile_key ) )
     fOutputVelocityCalibName = getOptionAsString(fParams.getOptions(),  fVelocityCalibFile_key );
-
-
 
   return true;
 }
@@ -132,10 +130,12 @@ bool DeltaTFinder::terminate()
   thresholdConversionMap[3] = 'c';
   thresholdConversionMap[4] = 'd';
 
+
+
   TString results_folder_name = (fOutputPath + "Results/position_" + boost::lexical_cast<std::string>(fPos)).c_str();
   system("mkdir -p " + results_folder_name);
 
-  for (auto & slot : getParamBank().getBarrelSlots()) {
+  for (auto& slot : getParamBank().getBarrelSlots()) {
     for (int thr = 1; thr <= 4; thr++) {
       const char* histo_name = formatUniqueSlotDescription(*(slot.second), thr, "timeDiffAB_");
       TH1F* histoToSave = getStatistics().getHisto1D(histo_name);
@@ -154,7 +154,6 @@ bool DeltaTFinder::terminate()
 
     }
   }
-
   outStream.close();
   delete fBarrelMap;
 
@@ -167,7 +166,7 @@ void DeltaTFinder::fillHistosForHit(const JPetHit& hit)
 {
   auto lead_times_A = hit.getSignalA().getRecoSignal().getRawSignal().getTimesVsThresholdNumber(JPetSigCh::Leading);
   auto lead_times_B = hit.getSignalB().getRecoSignal().getRawSignal().getTimesVsThresholdNumber(JPetSigCh::Leading);
-  for (auto & thr_time_pair : lead_times_A) {
+  for (auto& thr_time_pair : lead_times_A) {
     int thr = thr_time_pair.first;
     if ( lead_times_B.count(thr) > 0 ) { // if there was leading time at the same threshold at opposite side
       double timeDiffAB = lead_times_A[thr] - lead_times_B[thr];
