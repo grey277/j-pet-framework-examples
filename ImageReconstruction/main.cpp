@@ -15,16 +15,15 @@
 
 #include "FilterEvents.h"
 #include "ImageReco.h"
+#include "JPetGojaParser.h"
 #include "JPetManager/JPetManager.h"
 #include "MLEMRunner.h"
 #include "SinogramCreator.h"
 #include "SinogramCreatorMC.h"
 using namespace std;
 
-int main(int argc, const char* argv[])
-{
-  try
-  {
+int main(int argc, const char* argv[]) {
+  try {
     JPetManager& manager = JPetManager::getManager();
 
     manager.registerTask<FilterEvents>("FilterEvents");
@@ -32,12 +31,14 @@ int main(int argc, const char* argv[])
     manager.registerTask<SinogramCreator>("SinogramCreator");
     manager.registerTask<SinogramCreatorMC>("SinogramCreatorMC");
     manager.registerTask<MLEMRunner>("MLEMRunner");
+    manager.registerTask<JPetGojaParser>("JPetGojaParser");
 
-    manager.useTask("FilterEvents", "unk.evt", "reco.unk.evt");
-    manager.useTask("MLEMRunner", "reco.unk.evt", "");
-    manager.useTask("ImageReco", "reco.unk.evt", "reco");
-    manager.useTask("SinogramCreator", "reco.unk.evt", "sino");
-    manager.useTask("SinogramCreatorMC", "reco.unk.evt", "sino.mc");
+    // manager.useTask("FilterEvents", "unk.evt", "reco.unk.evt");
+    // manager.useTask("MLEMRunner", "reco.unk.evt", "");
+    // manager.useTask("ImageReco", "reco.unk.evt", "reco");
+    // manager.useTask("SinogramCreator", "reco.unk.evt", "sino");
+    manager.useTask("JPetGojaParser", "", "parsed.evt");
+    manager.useTask("SinogramCreatorMC", "parsed.evt", "sino.mc");
 
     manager.run(argc, argv);
   }
