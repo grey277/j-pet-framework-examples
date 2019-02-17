@@ -53,8 +53,6 @@ bool SinogramCreatorMC::init() {
 }
 
 void SinogramCreatorMC::generateSinogram() {
-  std::ifstream in(fInputData);
-
   float firstX = 0.f;
   float firstY = 0.f;
   float secondX = 0.f;
@@ -64,10 +62,9 @@ void SinogramCreatorMC::generateSinogram() {
   float firstT = 0.f;
   float secondT = 0.f;
   float skip = 0.f;
-  int coincidence = 0;
 
   int numberOfCorrectHits = 0;
-  int totalHits = 1; // to make sure that we do not divide by 0
+  int totalHits = 0;
 
   const int maxDistanceNumber = std::ceil(fMaxReconstructionLayerRadius * 2 * (1.f / fReconstructionDistanceAccuracy)) + 1;
   if (fSinogram == nullptr) {
@@ -77,17 +74,22 @@ void SinogramCreatorMC::generateSinogram() {
     }
   }
 
-  while (in.peek() != EOF) {
+  for (const auto& inputPath : fInputData) {
+    std::ifstream in(inputPath);
+    while (in.peek() != EOF) {
 
-    in >> firstX >> firstY >> firstZ >> firstT >> secondX >> secondY >> secondZ >> secondT;
+      in >> firstX >> firstY >> firstZ >> firstT >> secondX >> secondY >> secondZ >> secondT >> skip >> skip >> skip >> skip >> skip >> skip >>
+          skip >> skip;
 
-    if (analyzeHits(firstX, firstY, firstZ, firstT, secondX, secondY, secondZ, secondT)) {
-      numberOfCorrectI++;
+      if (analyzeHits(firstX, firstY, firstZ, firstT, secondX, secondY, secondZ, secondT)) {
+        numberOfCorrectHits++;
+      }
+      totalHits++;
     }
   }
 
   std::cout << "Correct hits: " << numberOfCorrectHits << " total hits: " << totalHits
-            << " (correct percentage: " << (((float)numberOfCorrectHits * 100.f) / (float)totalHits) << "%)" << std::endl;
+            << " (correct percentage: " << (((float)numberOfCorrectHits * 100.f) / (float)totalHits) << std::endl;
 }
 
 bool SinogramCreatorMC::exec() { return true; }
@@ -138,8 +140,8 @@ void SinogramCreatorMC::setUpOptions() {
   {
     fMaxReconstructionLayerRadius = getOptionAsFloat(opts, kMaxReconstructionRadius);
   }
-  if (isOptionSet(opts, kInputDataKey))
-  {
+
+  if (isOptionSet(opts, kInputDataKey)) {
     fInputData = getOptionAsVectorOfStrings(opts, kInputDataKey);
   }
   if (isOptionSet(opts, kEnableObliqueLORRemapping))

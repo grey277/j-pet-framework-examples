@@ -24,8 +24,7 @@
 
 #include "SinogramCreator.h"
 
-class SinogramCreatorMC : public SinogramCreator
-{
+class SinogramCreatorMC : public SinogramCreator {
 public:
   explicit SinogramCreatorMC(const char* name);
   virtual ~SinogramCreatorMC();
@@ -46,9 +45,8 @@ private:
   const std::string kScintillatorLenght = "SinogramCreatorMC_ScintillatorLenght_float";
   const std::string kMaxReconstructionRadius = "SinogramCreatorMC_MaxReconstructionRadius_float";
   const std::string kInputDataKey = "SinogramCreatorMC_InputDataPaths_std::vector<std::string>";
-  const std::string kEnableObliqueLORRemapping = "SinogramCreatorMC_EnableObliqueLORRemapping_bool";
-  const std::string kEnableTOFReconstruction = "SinogramCreatorMC_EnableKDEReconstruction_bool";
-  const std::string kReconstructSliceNumbers = "SinogramCreatorMC_ReconstructSliceNumber_std::vector<int>";
+  const std::string kEnableNonPerperdicualLOR = "SinogramCreatorMC_EnableNonPerperdicalLOR_bool";
+  const std::string kEnableTOFReconstrution = "SinogramCreatorMC_EnableTOFReconstruction_bool";
 
   std::vector<std::string> fInputData{"sinogram_data.txt"};
   std::string fOutFileName = "sinogramMC";
