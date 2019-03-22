@@ -20,23 +20,27 @@ JPetRecoImageTools::JPetRecoImageTools() {}
 
 JPetRecoImageTools::~JPetRecoImageTools() {}
 
-double JPetRecoImageTools::nearestNeighbour(int i, double y, std::function<double(int, int)>& func) {
+double JPetRecoImageTools::nearestNeighbour(int i, double y, std::function<double(int, int)>& func)
+{
   int j = std::round(y);
   return func(i, j);
 }
 
-double JPetRecoImageTools::linear(int i, double y, std::function<double(int, int)>& func) {
+double JPetRecoImageTools::linear(int i, double y, std::function<double(int, int)>& func)
+{
   int j = std::floor(y);
   double weight = std::abs(y - std::floor(y));
   return (1 - weight) * func(i, j) + weight * func(i, j + 1);
 }
 
-std::function<double(int, int)> JPetRecoImageTools::matrixGetterFactory(const SparseMatrix& emissionMatrix, bool isTransposed) {
-  if (!isTransposed) {
+std::function<double(int, int)> JPetRecoImageTools::matrixGetterFactory(const SparseMatrix& emissionMatrix, bool isTransposed)
+{
+  if (!isTransposed)
+  {
     return [&emissionMatrix](int i, int j) {
-      if (i >= 0 && i < (int)emissionMatrix.size1() && j >= 0 && j < (int)emissionMatrix.size2()) {
-        return emissionMatrix(i, j);
-      } else {
+      if (i >= 0 && i < (int)emissionMatrix.size1() && j >= 0 && j < (int)emissionMatrix.size2()) { return emissionMatrix(i, j); }
+      else
+      {
         return 0.;
       }
     };
@@ -44,9 +48,9 @@ std::function<double(int, int)> JPetRecoImageTools::matrixGetterFactory(const Sp
   else
   {
     return [&emissionMatrix](int i, int j) {
-      if (i >= 0 && i < (int)emissionMatrix.size1() && j >= 0 && j < (int)emissionMatrix.size2()) {
-        return emissionMatrix(j, i);
-      } else {
+      if (i >= 0 && i < (int)emissionMatrix.size1() && j >= 0 && j < (int)emissionMatrix.size2()) { return emissionMatrix(j, i); }
+      else
+      {
         return 0.;
       }
     };
@@ -57,7 +61,8 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::createSinogramWithSingleInt
                                                                                            double angleBeg, double angleEnd,
                                                                                            InterpolationFunc interpolationFunction,
                                                                                            RescaleFunc rescaleFunc, int rescaleMinCutoff,
-                                                                                           int rescaleFactor) {
+                                                                                           int rescaleFactor)
+{
   assert(emissionMatrix.size1() > 0);
   assert(emissionMatrix.size1() == emissionMatrix.size2());
   assert(nViews > 0);
@@ -71,8 +76,10 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::createSinogramWithSingleInt
   assert(stepsize > 0);
 
   int viewIndex = 0;
-  for (auto phi = angleBeg; phi < angleEnd; phi = phi + stepsize, viewIndex++) {
-    for (auto scanNumber = 0; scanNumber < nScans; scanNumber++) {
+  for (auto phi = angleBeg; phi < angleEnd; phi = phi + stepsize, viewIndex++)
+  {
+    for (auto scanNumber = 0; scanNumber < nScans; scanNumber++)
+    {
       proj(nScans - 1 - scanNumber, viewIndex) =
           JPetRecoImageTools::calculateProjection(emissionMatrix, phi, scanNumber, nScans, interpolationFunction);
     }
@@ -82,7 +89,8 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::createSinogramWithSingleInt
 }
 
 double JPetRecoImageTools::calculateProjection(const SparseMatrix& emissionMatrix, double angle, int scanNumber, int nScans,
-                                               InterpolationFunc& interpolationFunction) {
+                                               InterpolationFunc& interpolationFunction)
+{
   int N = scanNumber - std::floor(nScans / 2);
   const int kInputMatrixSize = emissionMatrix.size1();
   // if no. nScans is greater than the image width, then scale will be <1
@@ -135,7 +143,8 @@ double JPetRecoImageTools::calculateProjection(const SparseMatrix& emissionMatri
 
 JPetRecoImageTools::SparseMatrix JPetRecoImageTools::createSinogramWithDoubleInterpolation(SparseMatrix& emissionMatrix, int nAngles,
                                                                                            RescaleFunc rescaleFunc, int rescaleMinCutoff,
-                                                                                           int rescaleFactor) {
+                                                                                           int rescaleFactor)
+{
   assert(emissionMatrix.size1() > 0);
   assert(emissionMatrix.size1() == emissionMatrix.size2());
   assert(nAngles > 0);
@@ -152,16 +161,16 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::createSinogramWithDoubleInt
   {
     double cos = std::cos((double)angle * angleStep);
     double sin = std::sin((double)angle * angleStep);
-    for (int scanNumber = 0; scanNumber < imageSize - 1; scanNumber++) {
-      proj(scanNumber, angle) = calculateProjection2(scanNumber, cos, sin, imageSize, center, center2, matrixGet);
-    }
+    for (int scanNumber = 0; scanNumber < imageSize - 1; scanNumber++)
+    { proj(scanNumber, angle) = calculateProjection2(scanNumber, cos, sin, imageSize, center, center2, matrixGet); }
   }
   rescaleFunc(proj, rescaleMinCutoff, rescaleFactor);
   return proj;
 }
 
 double JPetRecoImageTools::calculateProjection2(int step, double cos, double sin, int imageSize, double center, double center2,
-                                                std::function<double(int, int)> matrixGet) {
+                                                std::function<double(int, int)> matrixGet)
+{
   double stepMinusCenter = step - center;
   double xtmp = center + stepMinusCenter * cos;
   double ytmp = center - stepMinusCenter * sin;
@@ -177,19 +186,19 @@ double JPetRecoImageTools::calculateProjection2(int step, double cos, double sin
   return p;
 }
 
-void JPetRecoImageTools::rescale(SparseMatrix& matrix, double minCutoff, double rescaleFactor) {
+void JPetRecoImageTools::rescale(SparseMatrix& matrix, double minCutoff, double rescaleFactor)
+{
 
   double datamax, datamin = matrix(0, 0);
-  for (unsigned int k = 0; k < matrix.size1(); k++) {
-    for (unsigned int j = 0; j < matrix.size2(); j++) {
+  for (unsigned int k = 0; k < matrix.size1(); k++)
+  {
+    for (unsigned int j = 0; j < matrix.size2(); j++)
+    {
       /// Applying min Cutoff
-      if (matrix(k, j) < minCutoff)
-        matrix(k, j) = minCutoff;
+      if (matrix(k, j) < minCutoff) matrix(k, j) = minCutoff;
       /// Finding the largest and the smallest element in the matrix.
-      if (matrix(k, j) > datamax)
-        datamax = matrix(k, j);
-      if (matrix(k, j) < datamin)
-        datamin = matrix(k, j);
+      if (matrix(k, j) > datamax) datamax = matrix(k, j);
+      if (matrix(k, j) < datamin) datamin = matrix(k, j);
     }
   }
 
@@ -200,15 +209,15 @@ void JPetRecoImageTools::rescale(SparseMatrix& matrix, double minCutoff, double 
     return;
   }
 
-  for (unsigned int k = 0; k < matrix.size1(); k++) {
-    for (unsigned int j = 0; j < matrix.size2(); j++) {
-      matrix(k, j) = (matrix(k, j) - datamin) * rescaleFactor / (datamax - datamin);
-    }
+  for (unsigned int k = 0; k < matrix.size1(); k++)
+  {
+    for (unsigned int j = 0; j < matrix.size2(); j++) { matrix(k, j) = (matrix(k, j) - datamin) * rescaleFactor / (datamax - datamin); }
   }
 }
 
 JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProject(SparseMatrix& sinogram, int nAngles, RescaleFunc rescaleFunc, int rescaleMinCutoff,
-                                                                 int rescaleFactor) {
+                                                                 int rescaleFactor)
+{
   int imageSize = sinogram.size1();
   double center = (double)(imageSize - 1) / 2.0;
   double center2 = center * center;
@@ -241,17 +250,18 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProject(SparseMatrix& s
     }
   }
 
-  for (int x = 0; x < imageSize; x++) {
-    for (int y = 0; y < imageSize; y++) {
-      reconstructedProjection(y, x) *= angleStep;
-    }
+  for (int x = 0; x < imageSize; x++)
+  {
+    for (int y = 0; y < imageSize; y++) { reconstructedProjection(y, x) *= angleStep; }
   }
   rescaleFunc(reconstructedProjection, rescaleMinCutoff, rescaleFactor);
   return reconstructedProjection;
 }
 
 JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectRealTOF(Matrix3D& sinogram, int nAngles, RescaleFunc rescaleFunc,
-                                                                        int rescaleMinCutoff, int rescaleFactor, double sinogramAccuracy, double tofBinSigma, double tofSigma) {
+                                                                        int rescaleMinCutoff, int rescaleFactor, double sinogramAccuracy,
+                                                                        double tofBinSigma, double tofSigma)
+{
   const auto sinogramBegin = sinogram.cbegin();
   int imageSize = sinogramBegin->second.size1();
   double center = (double)(imageSize - 1) / 2.0;
@@ -263,23 +273,28 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectRealTOF(Matrix3D
 
   const int max_sigma_multi = 3;
 
-  for (int angle = 0; angle < nAngles; angle++) {
+  for (int angle = 0; angle < nAngles; angle++)
+  {
     double cos = std::cos((double)angle * (double)angleStep);
     double sin = std::sin((double)angle * (double)angleStep);
 
-    for (const auto& tofBin : sinogram) {
+    for (const auto& tofBin : sinogram)
+    {
 
       const double lor_tof_center = tofBin.first * tofBinSigma * speed_of_light;
-      for (int x = 0; x < imageSize; x++) {
+      for (int x = 0; x < imageSize; x++)
+      {
         double xMinusCenter = (double)x - center;
         double xMinusCenter2 = xMinusCenter * xMinusCenter;
         double ttemp = xMinusCenter * cos + center;
-        
-        for (int y = 0; y < imageSize; y++) {
+
+        for (int y = 0; y < imageSize; y++)
+        {
           double yMinusCenter = (double)y - center;
           double yMinusCenter2 = yMinusCenter * yMinusCenter;
-          
-          if (yMinusCenter2 + xMinusCenter2 < center2) {
+
+          if (yMinusCenter2 + xMinusCenter2 < center2)
+          {
             double t = ttemp - yMinusCenter * sin;
             int n = std::floor(t + 0.5F);
 
@@ -289,9 +304,8 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectRealTOF(Matrix3D
             double diffBetweenLORCenterYandY = lor_center_y - y;
             double diffBetweenLORCenterXandX = lor_center_x - x;
             double distanceToCenterOfLOR =
-              std::sqrt((diffBetweenLORCenterXandX * diffBetweenLORCenterXandX) + (diffBetweenLORCenterYandY * diffBetweenLORCenterYandY));
-            if(x < lor_center_x)
-              distanceToCenterOfLOR = -distanceToCenterOfLOR;
+                std::sqrt((diffBetweenLORCenterXandX * diffBetweenLORCenterXandX) + (diffBetweenLORCenterYandY * diffBetweenLORCenterYandY));
+            if (x < lor_center_x) distanceToCenterOfLOR = -distanceToCenterOfLOR;
             reconstructedProjection(y, x) += tofBin.second(n, angle) * tofWeight(lor_tof_center, distanceToCenterOfLOR, tofSigma);
           }
         }
@@ -299,24 +313,25 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectRealTOF(Matrix3D
     }
   }
 
-  for (int x = 0; x < imageSize; x++) {
-    for (int y = 0; y < imageSize; y++) {
-      reconstructedProjection(y, x) *= angleStep;
-    }
+  for (int x = 0; x < imageSize; x++)
+  {
+    for (int y = 0; y < imageSize; y++) { reconstructedProjection(y, x) *= angleStep; }
   }
   rescaleFunc(reconstructedProjection, rescaleMinCutoff, rescaleFactor);
   return reconstructedProjection;
 }
 
-double JPetRecoImageTools::tofWeight(double lor_tof_center, double lor_position, double sigma) {
+double JPetRecoImageTools::tofWeight(double lor_tof_center, double lor_position, double sigma)
+{
   double x = lor_position - lor_tof_center;
   x *= x;
   double y = 2 * (sigma * sigma);
   return std::exp(-x / y);
 }
 
-JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectWithTOF(SparseMatrix& sinogram, Matrix2DTOF& tof, int nAngles,
-                                                                        RescaleFunc rescaleFunc, int rescaleMinCutoff, int rescaleFactor) {
+JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectWithKDE(SparseMatrix& sinogram, Matrix2DTOF& tof, int nAngles,
+                                                                        RescaleFunc rescaleFunc, int rescaleMinCutoff, int rescaleFactor)
+{
   int imageSize = sinogram.size1();
   double center = (double)(imageSize - 1) / 2.0;
   double center2 = center * center;
@@ -357,7 +372,8 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectWithTOF(SparseMa
           double diffBetweenLORCenterXandX = lor_center_x - x;
           double distanceToCenterOfLOR =
               std::sqrt((diffBetweenLORCenterXandX * diffBetweenLORCenterXandX) + (diffBetweenLORCenterYandY * diffBetweenLORCenterYandY));
-          for (unsigned int i = 0; i < tofVector.size(); i++) {
+          for (unsigned int i = 0; i < tofVector.size(); i++)
+          {
             float delta = tofVector[i] * 0.299792458;
             double distributionProbability = normalDistributionProbability(distanceToCenterOfLOR, delta, 150.);
             reconstructedProjection(y, x) += distributionProbability;
@@ -367,29 +383,31 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::backProjectWithTOF(SparseMa
     }
   }
 
-  for (int x = 0; x < imageSize; x++) {
-    for (int y = 0; y < imageSize; y++) {
-      reconstructedProjection(y, x) *= angleStep;
-    }
+  for (int x = 0; x < imageSize; x++)
+  {
+    for (int y = 0; y < imageSize; y++) { reconstructedProjection(y, x) *= angleStep; }
   }
   rescaleFunc(reconstructedProjection, rescaleMinCutoff, rescaleFactor);
   return reconstructedProjection;
 }
 
-double JPetRecoImageTools::normalDistributionProbability(float x, float mean, float stddev) {
+double JPetRecoImageTools::normalDistributionProbability(float x, float mean, float stddev)
+{
   double diff = x - mean;
   double stddev2 = stddev * stddev;
   return 1. / std::sqrt(2. * M_PI * stddev2) * std::exp(-(diff * diff) / (2. * stddev2));
 }
 
 JPetRecoImageTools::SparseMatrix JPetRecoImageTools::FilterSinogram(JPetRecoImageTools::FourierTransformFunction& ftf,
-                                                                    JPetFilterInterface& filterFunction, JPetRecoImageTools::SparseMatrix& sinogram) {
+                                                                    JPetFilterInterface& filterFunction, JPetRecoImageTools::SparseMatrix& sinogram)
+{
   return ftf(sinogram, filterFunction);
 }
 
 // see http://www.fftw.org/doc/One_002dDimensional-DFTs-of-Real-Data.html
 // http://www.fftw.org/fftw3.pdf
-JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTW(SparseMatrix& sinogram, JPetFilterInterface& filter) {
+JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTW(SparseMatrix& sinogram, JPetFilterInterface& filter)
+{
   assert(sinogram.size1() > 1);
   int nScanSize = sinogram.size1();
   int nAngles = sinogram.size2();
@@ -406,10 +424,9 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTW(SparseMatrix& sinogr
   fftw_plan plan, invPlan;
   plan = fftw_plan_dft_r2c_2d(nScanSize, nAngles, in, out, FFTW_MEASURE);
   invPlan = fftw_plan_dft_c2r_2d(nScanSize, nAngles, out, outDouble, FFTW_MEASURE);
-  for (int y = 0; y < nScanSize; y++) {
-    for (int x = 0; x < nAngles; x++) {
-      in[x + y * nAngles] = sinogram(y, x);
-    }
+  for (int y = 0; y < nScanSize; y++)
+  {
+    for (int x = 0; x < nAngles; x++) { in[x + y * nAngles] = sinogram(y, x); }
   }
   fftw_execute(plan);
 
@@ -435,10 +452,9 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTW(SparseMatrix& sinogr
   }
   fftw_execute(invPlan);
 
-  for (int y = 0; y < nScanSize; y++) {
-    for (int x = 0; x < nAngles; x++) {
-      result(y, x) = outDouble[x + y * nAngles] / size;
-    }
+  for (int y = 0; y < nScanSize; y++)
+  {
+    for (int x = 0; x < nAngles; x++) { result(y, x) = outDouble[x + y * nAngles] / size; }
   }
 
   fftw_free(out);
@@ -448,7 +464,8 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTW(SparseMatrix& sinogr
   return result;
 }
 
-JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTSLOW(SparseMatrix& sinogram, JPetFilterInterface& filter) {
+JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTSLOW(SparseMatrix& sinogram, JPetFilterInterface& filter)
+{
   int nAngles = sinogram.size2();
   int nScanSize = sinogram.size1();
   int pow = std::round(std::log(nScanSize) / std::log(2.0));
@@ -456,8 +473,10 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTSLOW(SparseMatrix& sin
   JPetRecoImageTools::SparseMatrix result(nScanSize, nAngles);
   std::vector<double> Re(padlen);
   std::vector<double> Im(padlen);
-  for (int x = 0; x < nAngles; x++) {
-    for (int y = 0; y < nScanSize; y++) {
+  for (int x = 0; x < nAngles; x++)
+  {
+    for (int y = 0; y < nScanSize; y++)
+    {
       Re[y] = sinogram(y, x);
       Im[y] = 0.;
     }
@@ -483,14 +502,13 @@ JPetRecoImageTools::SparseMatrix JPetRecoImageTools::doFFTSLOW(SparseMatrix& sin
     Im[padlen / 2] *= std::abs(filter(1));
 
     doFFTSLOWI(Re, Im, padlen, 0);
-    for (int y = 0; y < nScanSize; y++) {
-      result(y, x) = Re[y];
-    }
+    for (int y = 0; y < nScanSize; y++) { result(y, x) = Re[y]; }
   }
   return result;
 }
 
-void JPetRecoImageTools::doFFTSLOWT(std::vector<double>& Re, std::vector<double>& Im, int size, int shift) {
+void JPetRecoImageTools::doFFTSLOWT(std::vector<double>& Re, std::vector<double>& Im, int size, int shift)
+{
 
   int m = (int)(std::log((double)size) / std::log(2.0));
   int n = 1 << m;
@@ -557,7 +575,8 @@ void JPetRecoImageTools::doFFTSLOWT(std::vector<double>& Re, std::vector<double>
   }
 }
 
-void JPetRecoImageTools::doFFTSLOWI(std::vector<double>& Re, std::vector<double>& Im, int size, int shift) {
+void JPetRecoImageTools::doFFTSLOWI(std::vector<double>& Re, std::vector<double>& Im, int size, int shift)
+{
 
   for (int i = shift; i < shift + size; ++i) { Im[i] = -Im[i]; }
 
