@@ -26,6 +26,11 @@ set(AUXILIARY_FILES
   run.sh
 )
 
+set(ROOT_SCRIPTS
+  rootlogon.C
+  rootalias.C
+)
+
 ################################################################################
 ## Binary, header and source files definitions
 set(projectBinary ${projectName}.x)
@@ -39,14 +44,14 @@ set(HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/FilterEvents.h
             ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorTools.h
             ${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/src/util/png_writer.h)
 
-set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FilterEvents.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/ImageReco.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/MLEMRunner.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreator.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorMC.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorTools.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/src/util/png_writer.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+file(GLOB HEADERS *.h)
+file(GLOB SOURCES *.cpp)
+file(GLOB MAIN_CPP main.cpp)
+file(GLOB UNIT_TEST_SOURCES *Test.cpp)
+list(REMOVE_ITEM SOURCES ${UNIT_TEST_SOURCES})
+file(GLOB SOURCES_WITHOUT_MAIN *.cpp)
+list(REMOVE_ITEM SOURCES_WITHOUT_MAIN ${UNIT_TEST_SOURCES})
+list(REMOVE_ITEM SOURCES_WITHOUT_MAIN ${MAIN_CPP})
 
 ################################################################################
 ## Add options from j-pet-mlem as compile flags removing PET_ prefix
@@ -107,11 +112,7 @@ foreach(var ${vars})
 endforeach()
 
 add_executable(${projectBinary} ${SOURCES} ${HEADERS})
-target_link_libraries(${projectBinary} JPetFramework::JPetFramework JPetRecoImageTools)
-target_include_directories(${projectBinary} PRIVATE
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/src>
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/lib/json>
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/lib/cmdline>)
+target_link_libraries(${projectBinary} JPetFramework ${PNG_LIBRARIES} JPetRecoImageTools)
 
 add_custom_target(clean_data_${projectName}
   COMMAND rm -f *.tslot.*.root *.phys.*.root *.sig.root
@@ -120,10 +121,56 @@ add_custom_target(clean_data_${projectName}
 ## Copy the auxiliary files
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${AUXILIARY_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
+## Create variable for list with depends files path
+set(copy_depends)
+
+################################################################################
+## Copy the auxiliary files
+foreach(file_i ${AUXILIARY_FILES})
+  list(APPEND copy_depends ${CMAKE_CURRENT_BINARY_DIR}/${file_i})
+  if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${file_i})
+    set(CP_CMD copy_directory)
+  else()
+    set(CP_CMD copy)
+  endif()
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
+    POST_BUILD COMMAND ${CMAKE_COMMAND}
+    ARGS -E ${CP_CMD} ${CMAKE_CURRENT_SOURCE_DIR}/${file_i} ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
+  )
+endforeach(file_i)
+
+## Copy the ROOT scripts
+foreach(file_i ${ROOT_SCRIPTS})
+  list(APPEND copy_depends ${CMAKE_CURRENT_BINARY_DIR}/${file_i})
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
+    POST_BUILD COMMAND ${CMAKE_COMMAND}
+    ARGS -E ${CP_CMD} ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/${file_i} ${CMAKE_CURRENT_BINARY_DIR}/${file_i}
+  )
+endforeach(file_i)
+
 ################################################################################
 ## Unit tests
-option(PACKAGE_TESTS "Build the tests" ON)
-if(PACKAGE_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
+set(TEST_SRC SinogramCreatorTools.cpp)
+set(TESTS_DIR ${CMAKE_CURRENT_BINARY_DIR}/tests)
+file(MAKE_DIRECTORY ${TESTS_DIR})
+foreach(test_source ${UNIT_TEST_SOURCES})
+  get_filename_component(test ${test_source} NAME_WE)
+  list(APPEND test_binaries ${test}.x)
+  add_executable(${test}.x EXCLUDE_FROM_ALL ${test_source} ${TEST_SRC}
+    ${test_dictionaries}
+    )
+  set_target_properties(${test}.x PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_DIR} )
+  target_link_libraries(${test}.x
+    JPetFramework
+    ${Boost_LIBRARIES}
+    ${FFTW_LIBRARIES}
+    )
+endforeach()
+
+add_custom_target(tests_ImageReconstruction DEPENDS ${test_binaries})
+
+################################################################################
+## Add new target that depends on copied files
+add_custom_target(copy_files_${projectName} DEPENDS ${copy_depends})
+## Add dependencies between building project and copy files
+add_dependencies(${projectBinary} copy_files_${projectName})

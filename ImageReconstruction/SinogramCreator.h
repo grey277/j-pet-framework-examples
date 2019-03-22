@@ -56,7 +56,8 @@
  * - "SinogramCreator_SinogramZSplitNumber_int": defines number of splits around "z" coordinate
  * - "SinogramCreator_ScintillatorLenght_float": defines scintillator lenght in "z" coordinate
  */
-class SinogramCreator : public JPetUserTask {
+class SinogramCreator : public JPetUserTask
+{
 public:
   explicit SinogramCreator(const char* name);
   virtual ~SinogramCreator();
@@ -65,18 +66,31 @@ public:
   virtual bool terminate() override;
 
 protected:
-  int getSplitRangeNumber(float firstZ, float secondZ);
-  int getSplitRangeNumber(float z);
-  void saveResult(const JPetRecoImageTools::SparseMatrix& result, const std::string& outputFileName);
   bool analyzeHits(const JPetHit& firstHit, const JPetHit& secondHit);
-  bool analyzeHits(const float firstX, const float firstY, const float firstZ, const float firstTOF, const float secondX, const float secondY,
-                   const float secondZ, const float secondTOF);
-  int getSinogramSlice(float firstX, float firstY, float firstZ, float firstTOF, float secondX, float secondY, float secondZ, float secondTOF);
-  float getTOFRescaleFactor(float x_diff, float y_diff, float z_diff);
-  int maxValueInSinogram(const JPetRecoImageTools::SparseMatrix& sinogram);
+  bool analyzeHits(const TVector3& firstHit, const float firstTOF, const TVector3& secondHit, const float secondTOF);
+  /**
+   * @brief Function returing value of TOF rescale, to match same annihilation point after projection from 3d to 2d
+   * \param x_diff difference on x axis between hit ends
+   * \param y_diff difference on y axis between hit ends
+   * \param z_diff difference on z axis between hit ends
+   */
+  float getTOFRescaleFactor(const TVector3& posDiff) const;
 
-  JPetRecoImageTools::SparseMatrix** fSinogram = nullptr;
-  JPetRecoImageTools::Matrix2DTOF* fTOFInformation;
+  /**
+   * @brief Helper function used in saving result
+   * \param result matrix to find max value
+   * \return max value of matrix
+   */
+  int getMaxValue(const JPetRecoImageTools::Matrix2DProj& result);
+  /**
+   * @brief Helper function used to save results(sinograms and reconstructed images)
+   * \param result resulted matrix to save
+   * \param outputFileName name with path where to save result
+   */
+  void saveResult(const JPetRecoImageTools::Matrix2DProj& result, const std::string& outputFileName);
+
+  JPetRecoImageTools::Matrix2DProj** fSinogram = nullptr;
+  JPetRecoImageTools::Matrix2DTOF* fTOFInformation = nullptr;
 
   const int kReconstructionMaxAngle = 180;
   int fZSplitNumber = 1;
