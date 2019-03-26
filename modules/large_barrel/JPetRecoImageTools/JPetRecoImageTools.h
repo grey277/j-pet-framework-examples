@@ -205,6 +205,8 @@ public:
    */
   static SparseMatrix doFFTSLOW(SparseMatrix& sinogram, JPetFilterInterface& filter);
 
+  static int getMaxValue(const SparseMatrix& result);
+
 private:
   JPetRecoImageTools();
   ~JPetRecoImageTools();
