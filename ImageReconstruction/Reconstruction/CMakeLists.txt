@@ -65,8 +65,22 @@ add_custom_command(OUTPUT ${TESTS_DIR}/unitTestData
 add_custom_target(tests_fbp DEPENDS ${test_binaries} ${TESTS_DIR}/unitTestData)
 
 
-add_library(${projectName} SHARED ${SOURCES} ${HEADERS})
-target_include_directories(${projectName} PUBLIC
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${projectName}>
-                           $<BUILD_INTERFACE:${FFTW_INCLUDE_DIRS}>)
-target_link_libraries(${projectName} PRIVATE JPetFramework::JPetFramework ${FFTW_LIBRARIES})
+set(DICTIONARY_NAME G__ImageReconstruction)
+set(HEADERS_WITH_DICTIONARY_REQUIRED
+  JPetRecoImageTools/JPetSinogramType.h
+  )
+
+set(LINKDEF_NAME ImageReconstruction_LinkDef.h)
+
+include_directories(ROOT_BUG) # Fix bug in NewMacros Root file
+ROOT_GENERATE_DICTIONARY(${DICTIONARY_NAME} ${HEADERS_WITH_DICTIONARY_REQUIRED}
+  LINKDEF ${LINKDEF_NAME}
+  OPTIONS ${DICTIONARY_INCLUDES})
+
+add_library(${projectName} SHARED ${SOURCES} ${DICTIONARY_NAME}.cxx ${HEADERS})
+target_link_libraries(${projectName}
+  PRIVATE
+    ${FFTW_LIBRARIES})
+set_target_properties(${projectName} PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}"
+)
