@@ -36,13 +36,9 @@ set(ROOT_SCRIPTS
 set(projectBinary ${projectName}.x)
 project(${projectName} CXX)
 
-set(HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/FilterEvents.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/ImageReco.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/MLEMRunner.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreator.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorMC.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorTools.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/src/util/png_writer.h)
+add_subdirectory(Reconstruction)
+
+include_directories(Reconstruction/JPetRecoImageTools)
 
 file(GLOB HEADERS *.h)
 file(GLOB SOURCES *.cpp)
