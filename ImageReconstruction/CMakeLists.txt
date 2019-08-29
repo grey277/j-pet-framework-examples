@@ -146,7 +146,7 @@ endforeach(file_i)
 
 ################################################################################
 ## Unit tests
-set(TEST_SRC SinogramCreatorTools.cpp)
+set(TEST_SRC SinogramCreatorToolsTest.cpp)
 set(TESTS_DIR ${CMAKE_CURRENT_BINARY_DIR}/tests)
 file(MAKE_DIRECTORY ${TESTS_DIR})
 foreach(test_source ${UNIT_TEST_SOURCES})
@@ -158,6 +158,7 @@ foreach(test_source ${UNIT_TEST_SOURCES})
   set_target_properties(${test}.x PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TESTS_DIR} )
   target_link_libraries(${test}.x
     JPetFramework
+    JPetRecoImageTools
     ${Boost_LIBRARIES}
     ${FFTW_LIBRARIES}
     )
