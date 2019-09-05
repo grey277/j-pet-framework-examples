@@ -100,10 +100,10 @@ void TimeWindowCreatorTools::flagSigChs(
         stats.fillHistogram("good_vs_bad_sigch", 1, 2);
       }
     } else if (sigCh1.getType() == JPetSigCh::Trailing && sigCh2.getType() == JPetSigCh::Leading) {
-      if(sigCh1.getRecoFlag() == JPetSigCh::Unknown){
+      if (sigCh1.getRecoFlag() == JPetSigCh::Unknown) {
         sigCh1.setRecoFlag(JPetSigCh::Good);
-        if(saveHistos){
-          stats.fillHistogram("good_vs_bad_sigch", 1);
+        if (saveHistos) {
+          stats.getHisto1D("good_vs_bad_sigch")->Fill(1);
         }
       }
     } else if (sigCh1.getType() == JPetSigCh::Leading && sigCh2.getType() == JPetSigCh::Leading) {

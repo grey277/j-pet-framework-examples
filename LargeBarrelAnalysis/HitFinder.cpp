@@ -147,15 +147,46 @@ void HitFinder::initialiseHistograms(){
                                                 "Hit z position [cm]", "ID of Scintillator");
 
   // TOT calculating for all hits and reco flags
-  getStatistics().createHistogramWithAxes(new TH1D("TOT_all_hits", "TOT of all hits", 200, -250.0, 99750.0),
-                                                "Time over Threshold [ps]", "Number of Hits");
-  getStatistics().createHistogramWithAxes(new TH1D("TOT_good_hits", "TOT of hits with GOOD flag", 200, -250.0, 99750.0),
-                                                "Time over Threshold [ps]", "Number of Hits");
-  getStatistics().createHistogramWithAxes(new TH1D("TOT_corr_hits", "TOT of hits with CORRUPTED flag", 200, -250.0, 99750.0),
-                                                "Time over Threshold [ps]", "Number of Hits");
-  getStatistics().createHistogramWithAxes(new TH1D("remain_signals_per_scin", "Number of Unused Signals in Scintillator", 192, 0.5, 192.5),
-                                                "ID of Scintillator", "Number of Unused Signals in Scintillator");
-  getStatistics().createHistogramWithAxes(
-      new TH1D("remain_signals_tdiff", "Time Diff of an unused signal and the consecutive one", 200, fABTimeDiff-125.0, 49875.0+fABTimeDiff),
-                                                "Time difference [ps]", "Number of Signals");
+  getStatistics().createHistogram(new TH1F(
+    "TOT_all_hits", "TOT of all hits", 200, 0.0, 100000.0
+  ));
+  getStatistics().getHisto1D("TOT_all_hits")->GetXaxis()->SetTitle("Time over Threshold [ps]");
+  getStatistics().getHisto1D("TOT_all_hits")->GetYaxis()->SetTitle("Number of Hits");
+
+  getStatistics().createHistogram(new TH1F(
+    "TOT_good_hits", "TOT of hits with GOOD flag", 200, 0.0, 100000.0
+  ));
+  getStatistics().getHisto1D("TOT_good_hits")->GetXaxis()->SetTitle("Time over Threshold [ps]");
+  getStatistics().getHisto1D("TOT_good_hits")->GetYaxis()->SetTitle("Number of Hits");
+
+  getStatistics().createHistogram(new TH1F(
+    "TOT_corr_hits", "TOT of hits with CORRUPTED flag", 200, 0.0, 100000.0
+  ));
+  getStatistics().getHisto1D("TOT_corr_hits")->GetXaxis()->SetTitle("Time over Threshold [ps]");
+  getStatistics().getHisto1D("TOT_corr_hits")->GetYaxis()->SetTitle("Number of Hits");
+
+  getStatistics().createHistogram(
+      new TH1F("remain_signals_per_scin",
+               "Number of Unused Signals in Scintillator", 192, 0.5, 192.5));
+  getStatistics()
+      .getHisto1D("remain_signals_per_scin")
+      ->GetXaxis()
+      ->SetTitle("ID of Scintillator");
+  getStatistics()
+      .getHisto1D("remain_signals_per_scin")
+      ->GetYaxis()
+      ->SetTitle("Number of Unused Signals in Scintillator");
+
+  getStatistics().createHistogram(
+      new TH1F("remain_signals_tdiff",
+               "Time Diff of an unused signal and the consecutive one", 200,
+               fABTimeDiff, 50000.0 + fABTimeDiff));
+  getStatistics()
+      .getHisto1D("remain_signals_tdiff")
+      ->GetXaxis()
+      ->SetTitle("Time difference [ps]");
+  getStatistics()
+      .getHisto1D("remain_signals_tdiff")
+      ->GetYaxis()
+      ->SetTitle("Number of Signals");
 }

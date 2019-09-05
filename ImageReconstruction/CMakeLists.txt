@@ -36,18 +36,24 @@ set(ROOT_SCRIPTS
 set(projectBinary ${projectName}.x)
 project(${projectName} CXX)
 
+set(HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/FilterEvents.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/ImageReco.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/MLEMRunner.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreator.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/ReconstructionTask.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorTools.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/src/util/png_writer.h)
+
+set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FilterEvents.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/ImageReco.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/MLEMRunner.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreator.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/ReconstructionTask.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/SinogramCreatorTools.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/../j-pet-mlem/src/util/png_writer.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+
 add_subdirectory(Reconstruction)
-
-include_directories(Reconstruction/JPetRecoImageTools)
-
-file(GLOB HEADERS *.h)
-file(GLOB SOURCES *.cpp)
-file(GLOB MAIN_CPP main.cpp)
-file(GLOB UNIT_TEST_SOURCES *Test.cpp)
-list(REMOVE_ITEM SOURCES ${UNIT_TEST_SOURCES})
-file(GLOB SOURCES_WITHOUT_MAIN *.cpp)
-list(REMOVE_ITEM SOURCES_WITHOUT_MAIN ${UNIT_TEST_SOURCES})
-list(REMOVE_ITEM SOURCES_WITHOUT_MAIN ${MAIN_CPP})
 
 ################################################################################
 ## Add options from j-pet-mlem as compile flags removing PET_ prefix

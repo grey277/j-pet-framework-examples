@@ -28,6 +28,7 @@
 #include "JPetSinogramType.h"
 
 #include "JPetFilterInterface.h"
+#include "fftw3.h"
 
 template <class T, typename U>
 struct PairHash
