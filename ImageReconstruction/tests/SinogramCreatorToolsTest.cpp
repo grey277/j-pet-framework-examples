@@ -199,6 +199,7 @@ BOOST_AUTO_TEST_CASE(remap_to_single_layer) {
 }
 
 BOOST_AUTO_TEST_CASE(polyfit_test) {
+  const float kEPSILON = 0.1f;
   BOOST_REQUIRE_CLOSE(
       SinogramCreatorTools::getPolyFit(
           {std::sqrt((9.39 * 9.39) + (-10.75 * -10.75)), -std::abs(3.39)}),
