@@ -33,6 +33,7 @@
 #include "JPetFilterRidgelet.h"
 #include "JPetFilterSheppLogan.h"
 #include "JPetRecoImageTools.h"
+#include "SinogramCreatorTools.h"
 #include "JPetUserTask/JPetUserTask.h"
 
 #include "JPetSinogramType.h"

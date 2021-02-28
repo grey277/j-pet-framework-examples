@@ -35,51 +35,14 @@ bool ReconstructionTask::init()
 
 bool ReconstructionTask::exec() { return true; }
 
-int ReconstructionTask::getMaxValue(const JPetSinogramType::SparseMatrix& result)
-{
-  int maxValue = 0;
-  for (unsigned int i = 0; i < result.size1(); i++)
-  {
-    for (unsigned int j = 0; j < result.size2(); j++)
-    {
-      if (static_cast<int>(result(i, j)) > maxValue)
-        maxValue = static_cast<int>(result(i, j));
-    }
-  }
-  return maxValue;
-}
-
-void ReconstructionTask::saveResult(const JPetSinogramType::SparseMatrix& result, const std::string& outputFileName)
-{
-  int maxValue = getMaxValue(result);
-  std::ofstream res(outputFileName);
-  res << "P2" << std::endl;
-  res << result.size2() << " " << result.size1() << std::endl;
-  res << maxValue << std::endl;
-  for (unsigned int i = 0; i < result.size1(); i++)
-  {
-    for (unsigned int j = 0; j < result.size2(); j++)
-    {
-      int resultInt = std::round(result(i, j));
-      if (resultInt < 0)
-      {
-        resultInt = 0;
-      }
-      res << resultInt << " ";
-    }
-    res << std::endl;
-  }
-  res.close();
-}
-
 bool ReconstructionTask::terminate()
 {
   JPetRecoImageTools::FourierTransformFunction f = JPetRecoImageTools::doFFTW1D;
   const auto& sinogram = fSinogram->getSinogram();
   unsigned int zSplitNumber = fSinogram->getZSplitNumber();
+  JPetRecoImageTools::FilteredBackProjectionWeightingFunction weightFunction;
   static std::map<std::string, int> reconstructionNameToWeight{{"FBP", ReconstructionTask::kWeightingType::kFBP},
                                                                {"TOFFBP", ReconstructionTask::kWeightingType::kTOFFBP}};
-  JPetRecoImageTools::FilteredBackProjectionWeightingFunction weightFunction;
 
   switch (reconstructionNameToWeight[fReconstructionName])
   {
@@ -95,6 +58,13 @@ bool ReconstructionTask::terminate()
     break;
   }
 
+  static std::map<std::string, int> filterNameToFilter{{"None", ReconstructionTask::kFilterType::kFilterNone},
+                                                       {"Cosine", ReconstructionTask::kFilterType::kFilterCosine},
+                                                       {"Hamming", ReconstructionTask::kFilterType::kFilterHamming},
+                                                       {"Hann", ReconstructionTask::kFilterType::kFilterHann},
+                                                       {"Ridgelet", ReconstructionTask::kFilterType::kFilterRidgelet},
+                                                       {"SheppLogan", ReconstructionTask::kFilterType::kFilterSheppLogan}};
+
   for (unsigned int i = 0; i < zSplitNumber; i++)
   { // loop throught Z slices
     int sliceNumber = i - (zSplitNumber / 2);
@@ -104,12 +74,6 @@ bool ReconstructionTask::terminate()
     for (float cutOffValue = fCutOffValueBegin; cutOffValue <= fCutOffValueEnd; cutOffValue += fCutOffValueStep)
     {
       JPetFilterInterface* filter;
-      static std::map<std::string, int> filterNameToFilter{{"None", ReconstructionTask::kFilterType::kFilterNone},
-                                                           {"Cosine", ReconstructionTask::kFilterType::kFilterCosine},
-                                                           {"Hamming", ReconstructionTask::kFilterType::kFilterHamming},
-                                                           {"Hann", ReconstructionTask::kFilterType::kFilterHann},
-                                                           {"Ridgelet", ReconstructionTask::kFilterType::kFilterRidgelet},
-                                                           {"SheppLogan", ReconstructionTask::kFilterType::kFilterSheppLogan}};
 
       switch (filterNameToFilter[fFilterName])
       {
@@ -146,10 +110,10 @@ bool ReconstructionTask::terminate()
       }
 
       JPetSinogramType::SparseMatrix result =
-          JPetRecoImageTools::backProjectMatlab(filtered, fSinogram->getReconstructionDistanceAccuracy(), fSinogram->getTOFWindowSize(), fLORTOFSigma,
+          JPetRecoImageTools::backProject(filtered, fSinogram->getReconstructionDistanceAccuracy(), fSinogram->getTOFWindowSize(), fLORTOFSigma,
                                           weightFunction, JPetRecoImageTools::rescale, 0, 10000);
 
-      saveResult(result, fOutFileName + "reconstruction_with_" + fReconstructionName + "_" + fFilterName + "_CutOff_" + std::to_string(cutOffValue) +
+      SinogramCreatorTools::saveResult(result, fOutFileName + "reconstruction_with_" + fReconstructionName + "_" + fFilterName + "_CutOff_" + std::to_string(cutOffValue) +
                              "_slicenumber_" + std::to_string(sliceNumber) + ".ppm");
       delete filter;
     }

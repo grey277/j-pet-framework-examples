@@ -87,9 +87,8 @@ protected:
 
   float fMaxReconstructionLayerRadius = 0.f;    // in cm
   float fReconstructionDistanceAccuracy = 0.1f; // in cm, 1mm accuracy, maximal accuracy: 0.001f
-  float fScintillatorLenght = 50.0f;            // in cm
+  float fScintillatorLength = 50.0f;            // in cm
   bool fEnableObliqueLORRemapping = false;      // enable remapping LORs to correct sinogram slices based on TOF value
-  bool fEnableKDEReconstruction = false;        // enable saving extra TOF information
 
   const float kEPSILON = 0.0001f;
 
@@ -104,9 +103,8 @@ private:
   const std::string kReconstructionDistanceAccuracy = "SinogramCreator_ReconstructionDistanceAccuracy_float";
   const std::string kMaxReconstructionLayerRadius = "SinogramCreator_MaxReconstructionLayerRadius_float";
   const std::string kZSplitNumber = "SinogramCreator_SinogramZSplitNumber_int";
-  const std::string kScintillatorLenght = "SinogramCreator_ScintillatorLenght_float";
+  const std::string kScintillatorLength = "SinogramCreator_ScintillatorLength_float";
   const std::string kEnableObliqueLORRemapping = "SinogramCreator_EnableObliqueLORRemapping_bool";
-  const std::string kEnableTOFReconstrution = "SinogramCreator_EnableKDEReconstruction_bool";
   const std::string kEnableNEMAAttenuation = "SinogramCreator_EnableNEMAAttenuation_bool";
   const std::string kTOFBinSliceSize = "SinogramCreator_TOFBinSliceSize_float";
 

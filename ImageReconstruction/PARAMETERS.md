@@ -74,31 +74,52 @@ Description of available parameters in ImageReconstruction example.
   Used to decrease size of bin, if bin multiplier is 1: 1 bin correspondes to 1 cm.
 
 - `SinogramCreator_OutFileName_std::string`
-  Path to file where sinogram will be saved.
+  Path where sinogram root file will be saved.
 
 - `SinogramCreator_ReconstructionDistanceAccuracy_float`
-  Used to decrease size of bin, if reconstruction distance accuracy is 1: 1 bin correspondes to 1cm
+  In cm, setting to 1 means 1 px represents 1cm.
+
+- `SinogramCreator_MaxReconstructionLayerRadius_float`
+  In cm, useful to increase reconstruction time, by reducing radius of reconstructed image.
 
 - `SinogramCreator_SinogramZSplitNumber_int`
-  Number of sinograms along Z axis. Z axis is divided by this number and then evenly split.
+  Number of splits on Z axis.
 
-- `SinogramCreator_ScintillatorLenght_float`
-  Lenght of the scintillator. [cm]
+- `SinogramCreator_ScintillatorLength_float`
+  Length of the scintillators, by default set to 50cm.
 
-- `SinogramCreatorMC_OutFileName_std::string`
-  Path to file where sinogram will be saved.
+- `SinogramCreator_EnableObliqueLORRemapping_bool`
+  Enables remapping oblique LORs to same Z position based on TOF.
 
-- `SinogramCreatorMC_ReconstructionDistanceAccuracy_float`
-  Used to decrease size of bin, if reconstruction distance accuracy is 1: 1 bin correspondes to 1cm
+- `SinogramCreator_EnableNEMAAttenuation_bool`
+  Enables attenuation correction for NEMA phantom. It should only be enabled, if input data contains NEMA phantom.
 
-- `SinogramCreatorMC_SinogramZSplitNumber_int`
-  Number of sinograms along Z axis. Z axis is divided by this number and then evenly split.
+- `SinogramCreator_TOFBinSliceSize_float`
+  Size of TOF bin used for TOF-FBP.
 
-- `SinogramCreatorMC_ScintillatorLenght_float`
-  Lenght of the scintillator. [cm]
+- `SinogramCreator_GojaInputFilesPaths_std::vector<std::string>`
+  Only set if input data should be readed from Goja format, left blank for reading data from framework.
 
-- `SinogramCreatorMC_MaxReconstructionRadius_float`
-  Maximal possible reconstruction radius. [cm]
+- `ReconstructionTask_ReconstructSliceNumbers_std::vector<int>`
+  Set to reconstruct only selected slices on Z, useful to increase reconstruction time.
 
-- `SinogramCreatorMC_InputDataPath_std::string`
-  Path to file where input data is stored.
+- `ReconstructionTask_FilterCutOffValueBegin_float`
+- `ReconstructionTask_FilterCutOffValueEnd_float`
+- `ReconstructionTask_FilterCutOffValueStep_float`
+  Options allowing to set cutoff value for filter. It will reconstruct and save image for all cutoff values between ``begin`` and ``end`` by ``step`` values.
+
+- `ReconstructionTask_FilterName_std::string`
+  Filter to use, allowed values: ``None``, ``Cosine``, ``Hamming``, ``Hann``, ``Ridgelet``, ``SheppLogan``. By default ``None`` is used.
+
+- `ReconstructionTask_FilterAlphaValue_float`
+  Some filters have extra ``alpha`` parameter. If filter is using this parameter, it can be set here.
+
+- `ReconstructionTask_ReconstructionType_std::string`
+  Reconstruction type, allowed values: ``FBP``, ``TOFFBP``.
+
+- `ReconstructionTask_LORTOFSigma_float`
+  TOF sigma on LOR.
+
+- `ReconstructionTask_OutFileName_std::string`
+  Where reconstructed images should be saved.
+  

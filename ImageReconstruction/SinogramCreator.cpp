@@ -183,13 +183,19 @@ bool SinogramCreator::terminate()
 {
   // Save sinogram to root file.
   JPetSinogramType map("Sinogram", fZSplitNumber, fMaxDistanceNumber, fMaxReconstructionLayerRadius, fReconstructionDistanceAccuracy,
-                       fScintillatorLenght, fTOFBinSliceSize, fZSplitRange);
+                       fScintillatorLength, fTOFBinSliceSize, fZSplitRange);
   map.addSinogram(fSinogramData);
   map.setNumberOfAllEvents(fTotalAnalyzedHits);
   map.setNumberOfEventsUsedToCreateSinogram(fNumberOfCorrectHits);
   JPetWriter* writer = new JPetWriter(fOutFileName.c_str());
   map.saveSinogramToFile(writer);
   writer->closeFile();
+
+  for(auto &matrix : fSinogramData) {
+    for (auto &sinogram : matrix) {
+      SinogramCreatorTools::saveResult(sinogram.second, "sinogram_" + std::to_string(sinogram.first) + ".ppm");
+    }
+  }
 
   float totalCorrectProcentage = 0.f;
   if (fTotalAnalyzedHits != 0)
@@ -219,17 +225,13 @@ void SinogramCreator::setUpOptions()
   {
     fZSplitNumber = getOptionAsInt(opts, kZSplitNumber);
   }
-  if (isOptionSet(opts, kScintillatorLenght))
+  if (isOptionSet(opts, kScintillatorLength))
   {
-    fScintillatorLenght = getOptionAsFloat(opts, kScintillatorLenght);
+    fScintillatorLength = getOptionAsFloat(opts, kScintillatorLength);
   }
   if (isOptionSet(opts, kEnableObliqueLORRemapping))
   {
     fEnableObliqueLORRemapping = getOptionAsBool(opts, kEnableObliqueLORRemapping);
-  }
-  if (isOptionSet(opts, kEnableTOFReconstrution))
-  {
-    fEnableKDEReconstruction = getOptionAsBool(opts, kEnableTOFReconstrution);
   }
   if (isOptionSet(opts, kGojaInputFilePath))
   {
@@ -255,7 +257,7 @@ void SinogramCreator::setUpOptions()
     fMaxReconstructionLayerRadius = mapping.getRadiusOfLayer(mapping.getLayersCount() - 1);
   }
 
-  const float maxZRange = fScintillatorLenght / 2.f;
+  const float maxZRange = fScintillatorLength / 2.f;
   float range = (2.f * maxZRange) / fZSplitNumber;
   for (int i = 0; i < fZSplitNumber; i++)
   {

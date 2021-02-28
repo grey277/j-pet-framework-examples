@@ -240,3 +240,40 @@ double SinogramCreatorTools::getPolyFit(std::vector<double> indepvar)
   }
   return ypred;
 }
+
+int SinogramCreatorTools::getMaxValue(const JPetSinogramType::SparseMatrix& result)
+{
+  int maxValue = 0;
+  for (unsigned int i = 0; i < result.size1(); i++)
+  {
+    for (unsigned int j = 0; j < result.size2(); j++)
+    {
+      if (static_cast<int>(result(i, j)) > maxValue)
+        maxValue = static_cast<int>(result(i, j));
+    }
+  }
+  return maxValue;
+}
+
+void SinogramCreatorTools::saveResult(const JPetSinogramType::SparseMatrix& result, const std::string& outputFileName)
+{
+  int maxValue = getMaxValue(result);
+  std::ofstream res(outputFileName);
+  res << "P2" << std::endl;
+  res << result.size2() << " " << result.size1() << std::endl;
+  res << maxValue << std::endl;
+  for (unsigned int i = 0; i < result.size1(); i++)
+  {
+    for (unsigned int j = 0; j < result.size2(); j++)
+    {
+      int resultInt = std::round(result(i, j));
+      if (resultInt < 0)
+      {
+        resultInt = 0;
+      }
+      res << resultInt << " ";
+    }
+    res << std::endl;
+  }
+  res.close();
+}

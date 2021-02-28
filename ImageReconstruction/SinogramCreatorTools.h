@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 #include "TVector3.h"
+#include "JPetSinogramType.h"
 
 class SinogramCreatorTools
 {
@@ -48,6 +49,9 @@ public:
   static std::pair<TVector3,TVector3> remapToSingleLayer(const TVector3& firstHit, const TVector3& secondHit, const float radius);
 
   static double getPolyFit(std::vector<double> indepvar);
+
+  static int getMaxValue(const JPetSinogramType::SparseMatrix& result);
+  static void saveResult(const JPetSinogramType::SparseMatrix& result, const std::string& outputFileName);
 
 private:
   SinogramCreatorTools() = delete;
