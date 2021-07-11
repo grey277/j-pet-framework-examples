@@ -50,7 +50,6 @@ std::pair<int, float> SinogramCreatorTools::getAngleAndDistance(float firstX, fl
   int angleResult = std::round(angle);
   angleResult = angleResult % 180;
   float distance = std::sqrt(std::pow((xAngle), 2) + std::pow((yAngle), 2));
-  if (xAngle < 0) distance = -distance;
   
   return std::make_pair(angleResult, distance);
 }
