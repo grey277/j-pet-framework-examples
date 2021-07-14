@@ -29,14 +29,15 @@ bool InterfileMLPReconstruction::init()
   setUpOptions();
   fOutputEvents = new JPetTimeWindow("JPetEvent");
 
-  getStatistics().createHistogram(new TH3D("hits_pos",
-                                           "Reconstructed hit pos",
-                                           fNumberOfBinsX, -fXRange, fXRange,
-                                           fNumberOfBinsY, -fYRange, fYRange,
-                                           fNnumberOfBinsZ, -fZRange, fZRange));
   return true;
 }
-
+ // FOV 400x400x500
+ // Pixel size 2.5mm
+static TH3D* fStat = new TH3D("hits_pos",
+         "Reconstructed hit pos",
+         160, -20, 20,
+         160, -20, 20,
+         200, -25, 25);
 bool InterfileMLPReconstruction::exec()
 {
   if (const auto &timeWindow = dynamic_cast<const JPetTimeWindow *const>(fEvent))
@@ -55,7 +56,7 @@ bool InterfileMLPReconstruction::exec()
         {
           for (unsigned int j = i + 1; j < hits.size(); j++) {
             TVector3 annihilationPoint = EventCategorizerTools::calculateAnnihilationPoint(hits[i], hits[j]);
-            getStatistics().getObject<TH3D>("hits_pos")->Fill(annihilationPoint.X(), annihilationPoint.Y(), annihilationPoint.Z());
+           fStat->Fill(annihilationPoint.X(), annihilationPoint.Y(), annihilationPoint.Z());
           }
         }
       }
@@ -71,7 +72,7 @@ bool InterfileMLPReconstruction::exec()
 
 bool InterfileMLPReconstruction::terminate()
 {
-  InterfileReconstructionTools::saveToInterfile(getStatistics().getObject<TH3D>("hits_pos"), fOutputPath);
+  InterfileReconstructionTools::saveToInterfile(fStat, fOutputPath);
   return true;
 }
 
